@@ -66,6 +66,27 @@
 			color: red;
 			font-weight: bold;
 		}
+		
+		.about-section {
+			width: 80%;
+			margin-top: 2em;
+			padding: 1em;
+			border: 1px solid #ddd;
+			border-radius: 0.2em;
+			background-color: #f9f9f9;
+			text-align: center;
+		}
+		
+		.download-btn {
+			background-color: #FF5722;
+			color: #fff;
+			padding: 0.5em 1em;
+			border: none;
+			border-radius: 0.2em;
+			cursor: pointer;
+			margin: 0.5em;
+			text-decoration: none;
+		}
 	</style>
 </head>
 <body>
@@ -81,6 +102,19 @@
 		<div class="preview-container">
 			<div id="preview-pane"></div>
 			<div id="error-msg" class="code-error"></div>
+			<a href="guidelines.pdf" class="download-btn" download>Download Guidelines</a>
+		</div>
+		
+		<div class="about-section">
+			<h2>About Convo IDE</h2>
+			<p>Welcome to Convo IDE, a lightweight editor designed to work with ConvoHTML. ConvoHTML is a simplified markup language that lets you create web pages with an intuitive syntax.</p>
+			<p><strong>Basic Functions:</strong></p>
+			<ul>
+				<li><strong>Write ConvoHTML:</strong> Use the textarea to input your ConvoHTML code.</li>
+				<li><strong>Preview:</strong> Click the 'Preview' button to see how your ConvoHTML code renders as HTML.</li>
+				<li><strong>Save:</strong> Click the 'Save' button to download your ConvoHTML code as an HTML file.</li>
+				<li><strong>Download Guidelines:</strong> Click the 'Download Guidelines' button to get a PDF guide on how to use ConvoHTML effectively.</li>
+			</ul>
 		</div>
 		
 		<script>
