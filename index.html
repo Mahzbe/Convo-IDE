@@ -98,20 +98,45 @@
 			function parseConvoHTML(convoHTML) {
 				const lines = convoHTML.split('\n');
 				let html = '';
+				let tagStack = [];
 				
 				lines.forEach(line => {
-					if (line.startsWith('nav')) {
-						html += '<nav>';
-					} else if (line.startsWith('hero')) {
-						html += '<div class="hero">';
+					line = line.trim(); // Clean up spaces
+
+					if (line.startsWith('nav:')) {
+						const className = line.split(':')[1];
+						html += `<nav class="${className}">`;
+						tagStack.push('</nav>');
+					} else if (line.startsWith('hero:')) {
+						const parts = line.split(':');
+						const className = parts[0];
+						const backgroundImage = parts[1] === 'bg-image' ? "url('image.jpg')" : '';
+						html += `<div class="${className}" style="background-image: ${backgroundImage};">`;
+						tagStack.push('</div>');
 					} else if (line.startsWith('features')) {
 						html += '<div class="features">';
+						tagStack.push('</div>');
 					} else if (line.startsWith('footer')) {
 						html += '<footer>';
+						tagStack.push('</footer>');
+					} else if (line.startsWith('text:')) {
+						html += `<div>${line.split(':')[1]}</div>`;
+					} else if (line.startsWith('/nav') || line.startsWith('/hero') || line.startsWith('/features') || line.startsWith('/footer')) {
+						// No special handling needed for closing tags; pop from stack
+						html += tagStack.pop();
 					} else {
-						html += `<div>${line}</div>`;
+						// Handle any unknown lines or errors
+						console.error(`Unknown ConvoHTML line: ${line}`);
 					}
 				});
+				
+				// Ensure all opened tags are properly closed
+				if (tagStack.length > 0) {
+					console.error('Warning: Some tags were not closed properly.');
+					while (tagStack.length > 0) {
+						html += tagStack.pop();
+					}
+				}
 				
 				return html;
 			}
