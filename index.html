@@ -158,6 +158,7 @@
 			function parseConvoHTML(convoHTML) {
 				const lines = convoHTML.split('\n');
 				let html = '';
+				let css = '';
 				let tagStack = [];
 				let error = '';
 
@@ -182,9 +183,22 @@
 						tagStack.push('</footer>');
 					} else if (line.startsWith('text:')) {
 						html += `<div>${line.split(':')[1]}</div>`;
+					} else if (line.startsWith('button:')) {
+						html += `<button>${line.split(':')[1]}</button>`;
+					} else if (line.startsWith('icon:')) {
+						const iconClass = line.split(':')[1];
+						html += `<i class="${iconClass}"></i>`;
 					} else if (line.startsWith('/nav') || line.startsWith('/hero') || line.startsWith('/features') || line.startsWith('/footer')) {
 						// Closing tags
 						html += tagStack.pop();
+					} else if (line.startsWith('<style>')) {
+						// Extract CSS between <style> tags
+						let styleBlock = '';
+						while (line !== '</style>') {
+							styleBlock += line + '\n';
+							line = lines.shift().trim();
+						}
+						css += styleBlock;
 					} else if (line) {
 						// Handle unknown lines or errors
 						error += `Unknown line: ${line}\n`;
@@ -200,7 +214,7 @@
 				}
 				
 				return {
-					html: html,
+					html: `<style>${css}</style>` + html,
 					error: error
 				};
 			}
