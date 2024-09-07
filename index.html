@@ -34,24 +34,23 @@
 			height: 20em;
 			padding: 1em;
 			font-size: 1.2em;
+			border: 1px solid #ddd;
+			border-radius: 0.2em;
+			font-family: monospace;
 		}
 		
-		#preview-btn {
+		#preview-btn, #save-btn {
 			background-color: #4CAF50;
 			color: #fff;
 			padding: 0.5em 1em;
 			border: none;
 			border-radius: 0.2em;
 			cursor: pointer;
+			margin: 0.5em;
 		}
 		
 		#save-btn {
 			background-color: #2196F3;
-			color: #fff;
-			padding: 0.5em 1em;
-			border: none;
-			border-radius: 0.2em;
-			cursor: pointer;
 		}
 		
 		.preview-container {
@@ -60,6 +59,12 @@
 			padding: 1em;
 			border: 1px solid #ddd;
 			border-radius: 0.2em;
+			background-color: #fff;
+		}
+		
+		.code-error {
+			color: red;
+			font-weight: bold;
 		}
 	</style>
 </head>
@@ -75,6 +80,7 @@
 		</div>
 		<div class="preview-container">
 			<div id="preview-pane"></div>
+			<div id="error-msg" class="code-error"></div>
 		</div>
 		
 		<script>
@@ -82,24 +88,45 @@
 			const previewBtn = document.getElementById('preview-btn');
 			const saveBtn = document.getElementById('save-btn');
 			const previewPane = document.getElementById('preview-pane');
+			const errorMsg = document.getElementById('error-msg');
 			
 			previewBtn.addEventListener('click', () => {
 				const convoHTML = editor.value;
-				const html = parseConvoHTML(convoHTML);
-				previewPane.innerHTML = html;
+				const result = parseConvoHTML(convoHTML);
+				if (result.html) {
+					previewPane.innerHTML = result.html;
+					errorMsg.textContent = ''; // Clear previous errors
+				} else {
+					previewPane.innerHTML = '';
+					errorMsg.textContent = result.error; // Display errors
+				}
 			});
 			
 			saveBtn.addEventListener('click', () => {
 				const convoHTML = editor.value;
-				// Save the ConvoHTML code to a file or database
-				alert('ConvoHTML code saved!');
+				const result = parseConvoHTML(convoHTML);
+				if (result.html) {
+					const blob = new Blob([result.html], { type: 'text/html' });
+					const url = URL.createObjectURL(blob);
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = 'convo.html';
+					document.body.appendChild(a);
+					a.click();
+					document.body.removeChild(a);
+					URL.revokeObjectURL(url);
+					alert('ConvoHTML code saved as convo.html!');
+				} else {
+					alert('Error: Unable to save the code. Check for syntax errors.');
+				}
 			});
 			
 			function parseConvoHTML(convoHTML) {
 				const lines = convoHTML.split('\n');
 				let html = '';
 				let tagStack = [];
-				
+				let error = '';
+
 				lines.forEach(line => {
 					line = line.trim(); // Clean up spaces
 
@@ -122,23 +149,26 @@
 					} else if (line.startsWith('text:')) {
 						html += `<div>${line.split(':')[1]}</div>`;
 					} else if (line.startsWith('/nav') || line.startsWith('/hero') || line.startsWith('/features') || line.startsWith('/footer')) {
-						// No special handling needed for closing tags; pop from stack
+						// Closing tags
 						html += tagStack.pop();
-					} else {
-						// Handle any unknown lines or errors
-						console.error(`Unknown ConvoHTML line: ${line}`);
+					} else if (line) {
+						// Handle unknown lines or errors
+						error += `Unknown line: ${line}\n`;
 					}
 				});
 				
 				// Ensure all opened tags are properly closed
 				if (tagStack.length > 0) {
-					console.error('Warning: Some tags were not closed properly.');
+					error += 'Warning: Some tags were not closed properly.\n';
 					while (tagStack.length > 0) {
 						html += tagStack.pop();
 					}
 				}
 				
-				return html;
+				return {
+					html: html,
+					error: error
+				};
 			}
 		</script>
 	</main>
